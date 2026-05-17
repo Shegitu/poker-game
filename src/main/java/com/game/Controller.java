@@ -4,6 +4,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 
+import java.util.ArrayList;
+
 public class Controller {
 
     @FXML
@@ -21,23 +23,60 @@ public class Controller {
         playerCardsBox.getChildren().clear();
         computerCardsBox.getChildren().clear();
 
-        Label playerCard = new Label("A♠");
-        playerCard.setStyle(
+        Deck deck = new Deck();
+
+        ArrayList<Card> playerHand = new ArrayList<>();
+        ArrayList<Card> computerHand = new ArrayList<>();
+
+        for (int i = 0; i < 5; i++) {
+            playerHand.add(deck.dealCard());
+            computerHand.add(deck.dealCard());
+        }
+
+        int playerScore = 0;
+        int computerScore = 0;
+
+        for (Card card : playerHand) {
+
+            Label label = createCardLabel(card);
+
+            playerCardsBox.getChildren().add(label);
+
+            playerScore += card.getValue();
+        }
+
+        for (Card card : computerHand) {
+
+            Label label = createCardLabel(card);
+
+            computerCardsBox.getChildren().add(label);
+
+            computerScore += card.getValue();
+        }
+
+        if (playerScore > computerScore) {
+            resultLabel.setText("Player Wins!");
+        }
+        else if (computerScore > playerScore) {
+            resultLabel.setText("Computer Wins!");
+        }
+        else {
+            resultLabel.setText("Draw!");
+        }
+    }
+
+    private Label createCardLabel(Card card) {
+
+        Label label = new Label(card.toString());
+
+        label.setStyle(
                 "-fx-font-size: 22px;" +
                 "-fx-border-color: black;" +
-                "-fx-padding: 15;"
+                "-fx-border-width: 2;" +
+                "-fx-padding: 15;" +
+                "-fx-background-color: white;"
         );
 
-        Label computerCard = new Label("K♥");
-        computerCard.setStyle(
-                "-fx-font-size: 22px;" +
-                "-fx-border-color: black;" +
-                "-fx-padding: 15;"
-        );
-
-        playerCardsBox.getChildren().add(playerCard);
-        computerCardsBox.getChildren().add(computerCard);
-
-        resultLabel.setText("Game Started!");
+        return label;
     }
 }
