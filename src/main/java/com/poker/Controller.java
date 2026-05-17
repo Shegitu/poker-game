@@ -9,6 +9,10 @@ import java.util.List;
 
 public class Controller {
 
+    // 🎯 Score counters
+    private int playerScore = 0;
+    private int computerScore = 0;
+
     @FXML
     private HBox playerCardsBox;
 
@@ -17,6 +21,9 @@ public class Controller {
 
     @FXML
     private Label resultLabel;
+
+    @FXML
+    private Label scoreLabel;
 
     @FXML
     public void dealCards() {
@@ -45,19 +52,32 @@ public class Controller {
             computerCardsBox.getChildren().add(createCardLabel(c));
         }
 
-        // evaluate hands using Evaluator (renamed from HandEvaluator)
+        // evaluate hands
         String playerResult = Evaluator.evaluate(playerHand);
         String computerResult = Evaluator.evaluate(computerHand);
 
-        // show result
+        // decide winner
+        String winner = decideWinner(playerResult, computerResult);
+
+        // update score
+        if (winner.equals("Player Wins!")) {
+            playerScore++;
+        } 
+        else if (winner.equals("Computer Wins!")) {
+            computerScore++;
+        }
+
+        // update UI
         resultLabel.setText(
                 "Player: " + playerResult +
                 " | Computer: " + computerResult +
-                " | " + decideWinner(playerResult, computerResult)
+                " | " + winner
         );
+
+        scoreLabel.setText("Player: " + playerScore + " | Computer: " + computerScore);
     }
 
-    // compare results
+    // 🏆 winner logic
     private String decideWinner(String p, String c) {
 
         int pScore = score(p);
@@ -68,39 +88,38 @@ public class Controller {
         return "Draw!";
     }
 
-    // ranking system
+    // 📊 ranking system
     private int score(String hand) {
 
-    switch (hand) {
+        switch (hand) {
 
-        case "Four of a Kind":
-            return 7;
+            case "Four of a Kind":
+                return 7;
 
-        case "Full House":
-            return 6;
+            case "Full House":
+                return 6;
 
-        case "Flush":
-            return 5;
+            case "Flush":
+                return 5;
 
-        case "Straight":
-            return 4;
+            case "Straight":
+                return 4;
 
-        case "Three of a Kind":
-            return 3;
+            case "Three of a Kind":
+                return 3;
 
-        case "Two Pair":
-            return 2;
+            case "Two Pair":
+                return 2;
 
-        case "Pair":
-            return 1;
+            case "Pair":
+                return 1;
 
-        default:
-            return 0;
+            default:
+                return 0;
+        }
     }
-}
-    
 
-    // UI card display
+    // 🃏 UI card display
     private Label createCardLabel(Card card) {
 
         Label label = new Label(card.toString());
@@ -114,5 +133,19 @@ public class Controller {
         );
 
         return label;
+    }
+
+    // 🔁 optional reset function (works with Restart button)
+    @FXML
+    public void restartGame() {
+
+        playerScore = 0;
+        computerScore = 0;
+
+        playerCardsBox.getChildren().clear();
+        computerCardsBox.getChildren().clear();
+
+        resultLabel.setText("Game Restarted!");
+        scoreLabel.setText("Player: 0 | Computer: 0");
     }
 }
