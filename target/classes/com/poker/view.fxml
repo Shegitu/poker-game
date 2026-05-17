@@ -9,7 +9,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.poker.PokerGameController">
+            fx:controller="com.poker.Controller">
 
     <top>
         <Label text="♠ SIMPLE POKER GAME ♣"
