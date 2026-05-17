@@ -1,7 +1,8 @@
 package com.poker;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 
 import java.util.ArrayList;
@@ -9,22 +10,17 @@ import java.util.List;
 
 public class Controller {
 
-    // 🎯 Score counters
     private int playerScore = 0;
     private int computerScore = 0;
+    private boolean darkMode = false;
 
-    @FXML
-    private HBox playerCardsBox;
+    @FXML private HBox playerCardsBox;
+    @FXML private HBox computerCardsBox;
+    @FXML private Label resultLabel;
+    @FXML private Label scoreLabel;
+    @FXML private Label historyLabel;
 
-    @FXML
-    private HBox computerCardsBox;
-
-    @FXML
-    private Label resultLabel;
-
-    @FXML
-    private Label scoreLabel;
-
+    // DEAL CARDS
     @FXML
     public void dealCards() {
 
@@ -36,48 +32,55 @@ public class Controller {
         List<Card> playerHand = new ArrayList<>();
         List<Card> computerHand = new ArrayList<>();
 
-        // deal 5 cards each
         for (int i = 0; i < 5; i++) {
             playerHand.add(deck.dealCard());
             computerHand.add(deck.dealCard());
         }
 
-        // show player cards
         for (Card c : playerHand) {
             playerCardsBox.getChildren().add(createCardLabel(c));
         }
 
-        // show computer cards
         for (Card c : computerHand) {
             computerCardsBox.getChildren().add(createCardLabel(c));
         }
 
-        // evaluate hands
         String playerResult = Evaluator.evaluate(playerHand);
         String computerResult = Evaluator.evaluate(computerHand);
 
-        // decide winner
         String winner = decideWinner(playerResult, computerResult);
 
-        // update score
-        if (winner.equals("Player Wins!")) {
-            playerScore++;
-        } 
-        else if (winner.equals("Computer Wins!")) {
-            computerScore++;
-        }
+        //  SCORE UPDATE
+        if (winner.equals("Player Wins!")) playerScore++;
+        else if (winner.equals("Computer Wins!")) computerScore++;
 
-        // update UI
+        scoreLabel.setText("Player: " + playerScore + " | Computer: " + computerScore);
+
         resultLabel.setText(
                 "Player: " + playerResult +
                 " | Computer: " + computerResult +
                 " | " + winner
         );
 
-        scoreLabel.setText("Player: " + playerScore + " | Computer: " + computerScore);
+        // SAFE HISTORY
+        String newEntry =
+                "Player: " + playerResult +
+                " vs Computer: " + computerResult +
+                " → " + winner;
+
+        if (historyLabel.getText() == null ||
+                historyLabel.getText().equals("Game History:") ||
+                historyLabel.getText().equals("Game History:\n") ||
+                historyLabel.getText().trim().isEmpty()) {
+
+            historyLabel.setText("Game History:\n" + newEntry);
+
+        } else {
+            historyLabel.setText(historyLabel.getText() + "\n" + newEntry);
+        }
     }
 
-    // 🏆 winner logic
+    //  WINNER LOGIC
     private String decideWinner(String p, String c) {
 
         int pScore = score(p);
@@ -88,38 +91,22 @@ public class Controller {
         return "Draw!";
     }
 
-    // 📊 ranking system
+    // RANKING SYSTEM
     private int score(String hand) {
 
         switch (hand) {
-
-            case "Four of a Kind":
-                return 7;
-
-            case "Full House":
-                return 6;
-
-            case "Flush":
-                return 5;
-
-            case "Straight":
-                return 4;
-
-            case "Three of a Kind":
-                return 3;
-
-            case "Two Pair":
-                return 2;
-
-            case "Pair":
-                return 1;
-
-            default:
-                return 0;
+            case "Four of a Kind": return 7;
+            case "Full House": return 6;
+            case "Flush": return 5;
+            case "Straight": return 4;
+            case "Three of a Kind": return 3;
+            case "Two Pair": return 2;
+            case "Pair": return 1;
+            default: return 0;
         }
     }
 
-    // 🃏 UI card display
+    //  UI
     private Label createCardLabel(Card card) {
 
         Label label = new Label(card.toString());
@@ -135,9 +122,16 @@ public class Controller {
         return label;
     }
 
-    // 🔁 optional reset function (works with Restart button)
+    // RESTART GAME 
     @FXML
     public void restartGame() {
+
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("New Game");
+        alert.setHeaderText("Game has been reset!");
+        alert.setContentText("Scores and history cleared.");
+
+        alert.showAndWait();
 
         playerScore = 0;
         computerScore = 0;
@@ -147,5 +141,83 @@ public class Controller {
 
         resultLabel.setText("Game Restarted!");
         scoreLabel.setText("Player: 0 | Computer: 0");
+        historyLabel.setText("Game History:");
+    }
+
+    // EXIT 
+    @FXML
+    public void exitGame() {
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Exit Game");
+        alert.setHeaderText("Are you sure you want to exit?");
+
+        if (alert.showAndWait().get() == ButtonType.OK) {
+            System.exit(0);
+        }
+    }
+
+    // RULES 
+    @FXML
+    public void showRules() {
+
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Poker Rules");
+        alert.setHeaderText("How to Play");
+
+        alert.setContentText(
+                "Poker Ranking:\n" +
+                "Pair < Two Pair < Three of a Kind < Straight < Flush < Full House < Four of a Kind\n\n" +
+                "Highest hand wins the round."
+        );
+
+        alert.showAndWait();
+    }
+    @FXML
+private BorderPane rootPane; // IMPORTANT (we need root access)
+
+@FXML
+public void toggleTheme() {
+
+    if (!darkMode) {
+
+        // DARK MODE
+        rootPane.setStyle("-fx-background-color: #121212;");
+
+        playerCardsBox.setStyle("-fx-background-color: transparent;");
+        computerCardsBox.setStyle("-fx-background-color: transparent;");
+
+        resultLabel.setStyle("-fx-text-fill: gold;");
+        scoreLabel.setStyle("-fx-text-fill: white;");
+        historyLabel.setStyle("-fx-text-fill: white;");
+
+        darkMode = true;
+
+    } else {
+
+        // LIGHT MODE
+        rootPane.setStyle("-fx-background-color: white;");
+
+        playerCardsBox.setStyle("");
+        computerCardsBox.setStyle("");
+
+        resultLabel.setStyle("-fx-text-fill: black;");
+        scoreLabel.setStyle("-fx-text-fill: black;");
+        historyLabel.setStyle("-fx-text-fill: black;");
+
+        darkMode = false;
+    }
+}
+
+    //  ABOUT 
+    @FXML
+    public void showAbout() {
+
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("About");
+        alert.setHeaderText("Poker Game");
+        alert.setContentText("JavaFX Poker Project\nCreated by Student 🎓");
+
+        alert.showAndWait();
     }
 }
